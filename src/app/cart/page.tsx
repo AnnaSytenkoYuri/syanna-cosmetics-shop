@@ -3,7 +3,7 @@ import { CartView } from "@/components/cart-view";
 
 export const metadata: Metadata = {
   title: "Bag",
-  description: "Products saved in this browser.",
+  description: "Products in the bag for this demo.",
 };
 
 export default function CartPage() {

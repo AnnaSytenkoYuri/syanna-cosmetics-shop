@@ -42,7 +42,7 @@ const questions = [
   },
   {
     q: "Does this preview take payment?",
-    a: "No. Checkout stores a practice order in this browser. There is no server, no email, and no card.",
+    a: "No card. Checkout saves the order for the shop desk and can email it when Resend is configured. Shipping is a sample rate by country.",
   },
 ];
 

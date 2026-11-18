@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/add-to-cart";
+import { StockNote } from "@/components/stock-note";
 import { Price } from "@/components/price";
 import { ProductCard } from "@/components/product-card";
 import { ProductMark } from "@/components/product-mark";
@@ -71,14 +72,13 @@ export default async function ProductPage({
           <Price
             usd={product.priceUsd}
             compareAtUsd={product.compareAtUsd}
+            slug={product.slug}
             className="mt-5 text-base"
           />
           <p className="mt-6 text-base leading-7">{product.summary}</p>
           <p className="mt-4 text-sm leading-7 text-foreground/80">{product.detail}</p>
           <AddToCart slug={product.slug} withQty className="mt-8" />
-          <p className="mt-3 text-xs text-muted-foreground">
-            Adds to a bag in this browser. Nothing is reserved or charged.
-          </p>
+          <StockNote slug={product.slug} />
 
           <h2 className="mt-12 font-serif text-3xl">How to use it</h2>
           <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-6">

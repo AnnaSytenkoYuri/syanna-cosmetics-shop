@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Menu } from "lucide-react";
 import { useShop } from "@/components/shop-provider";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,14 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
+function subscribeToNothing() {
+  return () => {};
+}
+
+function useAfterHydration() {
+  return useSyncExternalStore(subscribeToNothing, () => true, () => false);
+}
+
 const links = [
   { href: "/shop", label: "Shop" },
   { href: "/routine", label: "Routine" },
@@ -24,12 +32,15 @@ const links = [
 export function SiteHeader() {
   const pathname = usePathname();
   const { count, currency, setCurrency } = useShop();
+  const live = useAfterHydration();
+  const shownCount = live ? count : 0;
+  const shownCurrency = live ? currency : "USD";
   const [open, setOpen] = useState(false);
 
   return (
     <div className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
       <p className="border-b border-border px-5 py-2 text-center text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-        Preview shop. You can fill a bag and a checkout. Nothing is charged.
+        Demo shop. Orders are saved for the desk. Nothing is charged.
       </p>
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-5 md:px-8">
         <Link href="/" className="font-serif text-[1.35rem] leading-none tracking-tight">
@@ -58,11 +69,11 @@ export function SiteHeader() {
               <button
                 key={option}
                 type="button"
-                aria-pressed={currency === option}
+                aria-pressed={shownCurrency === option}
                 onClick={() => setCurrency(option)}
                 className={cn(
                   "px-2.5 py-1.5 text-xs tracking-wide",
-                  currency === option ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+                  shownCurrency === option ? "bg-primary text-primary-foreground" : "text-muted-foreground",
                 )}
               >
                 {option}
@@ -72,10 +83,10 @@ export function SiteHeader() {
           <Link
             href="/cart"
             className="px-2 text-sm"
-            aria-label={`Bag, ${count} ${count === 1 ? "item" : "items"}`}
+            aria-label={`Bag, ${shownCount} ${shownCount === 1 ? "item" : "items"}`}
           >
             Bag
-            <span className="ml-1 tabular-nums">{count}</span>
+            <span className="ml-1 tabular-nums">{shownCount}</span>
           </Link>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
@@ -106,7 +117,7 @@ export function SiteHeader() {
                   </Link>
                 ))}
                 <Link href="/cart" className="border-b border-border py-4 text-lg" onClick={() => setOpen(false)}>
-                  Bag ({count})
+                  Bag ({shownCount})
                 </Link>
               </nav>
               <div className="mt-6 flex px-4" role="group" aria-label="Currency">
@@ -114,11 +125,11 @@ export function SiteHeader() {
                   <button
                     key={option}
                     type="button"
-                    aria-pressed={currency === option}
+                    aria-pressed={shownCurrency === option}
                     onClick={() => setCurrency(option)}
                     className={cn(
                       "h-11 flex-1 border border-border text-sm",
-                      currency === option && "bg-primary text-primary-foreground",
+                      shownCurrency === option && "bg-primary text-primary-foreground",
                     )}
                   >
                     {option}

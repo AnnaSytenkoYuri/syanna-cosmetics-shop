@@ -3,7 +3,7 @@ import { CheckoutForm } from "@/components/checkout-form";
 
 export const metadata: Metadata = {
   title: "Checkout",
-  description: "A practice checkout. Nothing is charged.",
+  description: "A demo checkout. Shipping by country, no card charge.",
 };
 
 export default function CheckoutPage() {

@@ -9,7 +9,7 @@ import { useShop } from "@/components/shop-provider";
 import { rateNote } from "@/lib/money";
 
 export function CartView() {
-  const { hydrated, items, totalUsd, setQty, remove } = useShop();
+  const { hydrated, items, totalUsd, setQty, remove, imageFor } = useShop();
 
   if (!hydrated) {
     return (
@@ -43,7 +43,12 @@ export function CartView() {
         {items.map(({ product, qty }) => (
           <li key={product.slug} className="flex gap-4 py-5">
             <Link href={`/product/${product.slug}`} className="shrink-0">
-              <ProductMark product={product} compact className="h-28 w-24" />
+              <ProductMark
+                product={product}
+                compact
+                imageUrl={imageFor(product.slug)}
+                className="h-28 w-24"
+              />
             </Link>
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-3">

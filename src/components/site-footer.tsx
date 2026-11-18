@@ -34,6 +34,11 @@ export function SiteFooter() {
                 Bag
               </Link>
             </li>
+            <li>
+              <Link href="/admin" className="hover:underline">
+                Shop desk
+              </Link>
+            </li>
           </ul>
         </div>
         <div className="text-sm leading-6 text-muted-foreground">

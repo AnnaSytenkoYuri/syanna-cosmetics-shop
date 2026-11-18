@@ -103,6 +103,7 @@ export default function HomePage() {
               <Price
                 usd={set.priceUsd}
                 compareAtUsd={set.compareAtUsd}
+                slug={set.slug}
                 className="mt-6 text-base text-primary-foreground"
               />
               <div className="mt-6 flex flex-wrap gap-3">
@@ -177,7 +178,7 @@ export default function HomePage() {
             This is a brand concept for a small cosmetics company, not a souvenir
             of Thailand and not a copy of a Korean shelf. The shop works: you
             can filter, read a product, fill a bag, and place a preview order.
-            The order stays in this browser. A card is not charged.
+            The order is saved for the shop desk. A card is not charged.
           </p>
           <p className="mt-4">
             The practical plan — company, factory samples, which countries to

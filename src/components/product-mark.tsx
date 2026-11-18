@@ -1,3 +1,6 @@
+"use client";
+
+import { useShop } from "@/components/shop-provider";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/lib/products";
 
@@ -41,21 +44,34 @@ export function ProductMark({
   product,
   className,
   compact = false,
+  imageUrl = "",
 }: {
   product: Product;
   className?: string;
   compact?: boolean;
+  imageUrl?: string;
 }) {
   const tone = tones[product.slug] ?? tones["water-veil"];
+  const { imageFor } = useShop();
+  const photo = imageUrl || imageFor(product.slug);
 
   return (
     <div
       className={cn("relative overflow-hidden", className)}
       style={{ background: tone.ground, color: tone.ink }}
     >
+      {photo ? (
+        // Admin photos are any https address, so they skip the image optimizer.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photo}
+          alt={product.name}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : null}
       <svg
         viewBox="0 0 360 440"
-        className="absolute inset-0 h-full w-full"
+        className={cn("absolute inset-0 h-full w-full", photo && "invisible")}
         aria-hidden="true"
       >
         <circle cx="290" cy="70" r="46" fill={tone.liquid} opacity="0.9" />

@@ -7,25 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useShop, type PreviewOrder } from "@/components/shop-provider";
+import { useShop } from "@/components/shop-provider";
 import { formatMoney } from "@/lib/money";
+import { quoteShipping, shippingCountries, shippingNote } from "@/lib/shipping";
 
-const countries = [
-  "Thailand",
-  "Ukraine",
-  "Singapore",
-  "Malaysia",
-  "Japan",
-  "South Korea",
-  "Germany",
-  "France",
-  "Netherlands",
-  "Poland",
-  "United Kingdom",
-  "United States",
-  "Australia",
-  "Somewhere else",
-];
+type PlacedOrder = {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  currency: "USD" | "THB";
+  lines: { slug: string; name: string; qty: number; unitUsd: number }[];
+  shippingUsd: number;
+  totalUsd: number;
+  emailStatus: "saved" | "sent" | "failed";
+};
 
 type Field = "name" | "email" | "country" | "city" | "address";
 
@@ -51,10 +47,13 @@ function validate(values: typeof empty) {
 }
 
 export function CheckoutForm() {
-  const { hydrated, items, totalUsd, currency, placeOrder } = useShop();
+  const { hydrated, items, totalUsd, currency, clear } = useShop();
   const [values, setValues] = useState(empty);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
-  const [order, setOrder] = useState<PreviewOrder | null>(null);
+  const [formError, setFormError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [order, setOrder] = useState<PlacedOrder | null>(null);
+  const quote = quoteShipping(values.country);
 
   if (!hydrated) {
     return <div className="h-80 animate-pulse bg-muted" />;
@@ -64,12 +63,16 @@ export function CheckoutForm() {
     return (
       <div className="max-w-xl">
         <p className="text-xs tracking-[0.16em] text-muted-foreground uppercase">
-          Preview order {order.id}
+          Demo order {order.id}
         </p>
-        <p className="mt-3 font-serif text-5xl leading-none">Saved in this browser.</p>
+        <p className="mt-3 font-serif text-5xl leading-none">Saved for the shop desk.</p>
         <p className="mt-4 text-sm leading-6">
-          Nothing was charged. No email was sent. The order lives only on this
-          device, so another phone will not see it.
+          Nothing was charged.
+          {order.emailStatus === "sent"
+            ? " A copy was emailed to the shop."
+            : order.emailStatus === "failed"
+              ? " The order is saved, and the email did not go out."
+              : " Email is not connected, so the order stays in the shop desk."}
         </p>
         <ul className="mt-8 divide-y divide-border border-y border-border text-sm">
           {order.lines.map((line) => (
@@ -82,6 +85,10 @@ export function CheckoutForm() {
               </span>
             </li>
           ))}
+          <li className="flex justify-between gap-4 py-3 text-muted-foreground">
+            <span>Shipping · {order.country}</span>
+            <span className="tabular-nums">{formatMoney(order.shippingUsd, order.currency)}</span>
+          </li>
         </ul>
         <p className="mt-4 flex justify-between text-sm">
           <span>Total</span>
@@ -90,13 +97,11 @@ export function CheckoutForm() {
           </span>
         </p>
         <p className="mt-6 text-sm leading-6 text-muted-foreground">
-          {order.name}, {order.city}, {order.country}. A real shop would confirm
-          the address, the label rules for that country, and a card payment
-          after the company is approved by a processor.
+          {order.name}, {order.city}, {order.country}. Open the shop desk to see the order
+          and the stock that changed.
         </p>
-        <Button className="mt-8 h-12 px-5" nativeButton={false}
-          render={<Link href="/shop" />}>
-          Back to the shop
+        <Button className="mt-8 h-12 px-5" nativeButton={false} render={<Link href="/admin" />}>
+          Open the shop desk
         </Button>
       </div>
     );
@@ -107,11 +112,9 @@ export function CheckoutForm() {
       <div className="border border-dashed border-border px-6 py-16">
         <p className="font-serif text-4xl">Nothing to check out.</p>
         <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-          Add a product first. Checkout on this preview only stores a practice
-          order in the browser.
+          Add a product first. This demo saves the order for the shop desk and does not charge a card.
         </p>
-        <Button className="mt-8 h-12 px-5" nativeButton={false}
-          render={<Link href="/shop" />}>
+        <Button className="mt-8 h-12 px-5" nativeButton={false} render={<Link href="/shop" />}>
           Browse the shop
         </Button>
       </div>
@@ -129,23 +132,46 @@ export function CheckoutForm() {
         event.preventDefault();
         const nextErrors = validate(values);
         setErrors(nextErrors);
-        if (Object.keys(nextErrors).length > 0) return;
-        const placed = placeOrder({
-          name: values.name.trim(),
-          email: values.email.trim(),
-          country: values.country,
-          city: values.city.trim(),
-          address: values.address.trim(),
-          note: values.note.trim(),
-        });
-        if (placed) setOrder(placed);
+        setFormError("");
+        if (Object.keys(nextErrors).length > 0 || !quote) return;
+        setBusy(true);
+        void (async () => {
+          try {
+            const response = await fetch("/api/orders", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                name: values.name.trim(),
+                email: values.email.trim(),
+                country: values.country,
+                city: values.city.trim(),
+                address: values.address.trim(),
+                note: values.note.trim(),
+                currency,
+                lines: items.map(({ product, qty }) => ({ slug: product.slug, qty })),
+              }),
+            });
+            const data = (await response.json()) as { order?: PlacedOrder; error?: string };
+            if (!response.ok || !data.order) {
+              setFormError(data.error ?? "The order could not be saved.");
+              return;
+            }
+            setOrder(data.order);
+            clear();
+            window.dispatchEvent(new Event("rs-catalog"));
+          } catch {
+            setFormError("The order could not be saved.");
+          } finally {
+            setBusy(false);
+          }
+        })();
       }}
       noValidate
     >
       <div className="space-y-5">
-        {Object.keys(errors).length > 0 ? (
+        {Object.keys(errors).length > 0 || formError ? (
           <p className="border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm" role="alert">
-            The form still needs a few details.
+            {formError || "The form still needs a few details."}
           </p>
         ) : null}
         <Field label="Full name" error={errors.name} htmlFor="name">
@@ -181,7 +207,7 @@ export function CheckoutForm() {
             className="h-11 w-full border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <option value="">Select a country</option>
-            {countries.map((country) => (
+            {shippingCountries.map((country) => (
               <option key={country} value={country}>
                 {country}
               </option>
@@ -235,8 +261,8 @@ export function CheckoutForm() {
             placeholder="Skin that moves between winter and Bangkok heat"
           />
         </Field>
-        <Button type="submit" className="h-12 px-6">
-          Place a preview order
+        <Button type="submit" className="h-12 px-6" disabled={busy}>
+          {busy ? "Saving…" : "Place demo order"}
         </Button>
       </div>
       <aside className="h-fit border border-border p-6">
@@ -254,12 +280,22 @@ export function CheckoutForm() {
         </ul>
         <Separator className="my-4" />
         <div className="flex justify-between text-sm">
-          <span>Total in {currency}</span>
+          <span>Products</span>
           <Price usd={totalUsd} />
         </div>
+        <div className="mt-3 flex justify-between text-sm text-muted-foreground">
+          <span>Shipping</span>
+          <span>{quote ? formatMoney(quote.usd, currency) : "Choose a country"}</span>
+        </div>
+        <div className="mt-3 flex justify-between text-sm">
+          <span>Total in {currency}</span>
+          <Price usd={totalUsd + (quote?.usd ?? 0)} />
+        </div>
         <p className="mt-4 text-xs leading-5 text-muted-foreground">
-          Practice checkout only. Your details stay in this browser and are not
-          sent to a server.
+          {quote
+            ? `${quote.zone}, ${quote.days}. ${shippingNote}`
+            : shippingNote}{" "}
+          No card is charged.
         </p>
       </aside>
     </form>
