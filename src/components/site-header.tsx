@@ -1,0 +1,138 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Menu } from "lucide-react";
+import { useShop } from "@/components/shop-provider";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+
+const links = [
+  { href: "/shop", label: "Shop" },
+  { href: "/routine", label: "Routine" },
+  { href: "/about", label: "The idea" },
+];
+
+export function SiteHeader() {
+  const pathname = usePathname();
+  const { count, currency, setCurrency } = useShop();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
+      <p className="border-b border-border px-5 py-2 text-center text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+        Preview shop. You can fill a bag and a checkout. Nothing is charged.
+      </p>
+      <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-5 md:px-8">
+        <Link href="/" className="font-serif text-[1.35rem] leading-none tracking-tight">
+          Room & Sun
+        </Link>
+        <nav className="ml-6 hidden items-center gap-6 md:flex">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "text-sm",
+                pathname === link.href
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              aria-current={pathname === link.href ? "page" : undefined}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="hidden border border-border sm:flex" role="group" aria-label="Currency">
+            {(["USD", "THB"] as const).map((option) => (
+              <button
+                key={option}
+                type="button"
+                aria-pressed={currency === option}
+                onClick={() => setCurrency(option)}
+                className={cn(
+                  "px-2.5 py-1.5 text-xs tracking-wide",
+                  currency === option ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+                )}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+          <Link
+            href="/cart"
+            className="px-2 text-sm"
+            aria-label={`Bag, ${count} ${count === 1 ? "item" : "items"}`}
+          >
+            Bag
+            <span className="ml-1 tabular-nums">{count}</span>
+          </Link>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="md:hidden"
+                  aria-label="Open menu"
+                />
+              }
+            >
+              <Menu />
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-sm">
+              <SheetHeader>
+                <SheetTitle className="font-serif text-2xl">Room & Sun</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 px-4">
+                {links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="border-b border-border py-4 text-lg"
+                    onClick={() => setOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                <Link href="/cart" className="border-b border-border py-4 text-lg" onClick={() => setOpen(false)}>
+                  Bag ({count})
+                </Link>
+              </nav>
+              <div className="mt-6 flex px-4" role="group" aria-label="Currency">
+                {(["USD", "THB"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={currency === option}
+                    onClick={() => setCurrency(option)}
+                    className={cn(
+                      "h-11 flex-1 border border-border text-sm",
+                      currency === option && "bg-primary text-primary-foreground",
+                    )}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function HeaderFallback() {
+  return <div className="h-[104px] border-b border-border bg-background" />;
+}
