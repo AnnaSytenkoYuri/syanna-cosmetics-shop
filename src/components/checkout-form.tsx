@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useAccount } from "@/components/account-session";
 import { Price } from "@/components/price";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,7 @@ import { quoteShipping, shippingCountries, shippingNote } from "@/lib/shipping";
 
 type PlacedOrder = {
   id: string;
+  customerId: string | null;
   name: string;
   city: string;
   country: string;
@@ -48,12 +50,26 @@ function validate(values: typeof empty) {
 
 export function CheckoutForm() {
   const { hydrated, items, totalUsd, currency, clear } = useShop();
+  const { customer } = useAccount();
   const [values, setValues] = useState(empty);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
   const [formError, setFormError] = useState("");
   const [busy, setBusy] = useState(false);
   const [order, setOrder] = useState<PlacedOrder | null>(null);
+  const [prefilledFor, setPrefilledFor] = useState<string | null>(null);
   const quote = quoteShipping(values.country);
+
+  if (customer && prefilledFor !== customer.id) {
+    setPrefilledFor(customer.id);
+    setValues((current) => ({
+      ...current,
+      name: current.name || customer.name,
+      email: current.email || customer.email,
+      country: current.country || customer.country,
+      city: current.city || customer.city,
+      address: current.address || customer.address,
+    }));
+  }
 
   if (!hydrated) {
     return <div className="h-80 animate-pulse bg-muted" />;
@@ -97,12 +113,24 @@ export function CheckoutForm() {
           </span>
         </p>
         <p className="mt-6 text-sm leading-6 text-muted-foreground">
-          {order.name}, {order.city}, {order.country}. Open the shop desk to see the order
-          and the stock that changed.
+          {order.name}, {order.city}, {order.country}. The desk moves this from placed to shipped.
         </p>
-        <Button className="mt-8 h-12 px-5" nativeButton={false} render={<Link href="/admin" />}>
-          Open the shop desk
-        </Button>
+        <div className="mt-8 flex flex-wrap gap-3">
+          {order.customerId ? (
+            <Button className="h-12 px-5" nativeButton={false} render={<Link href={`/account/orders/${order.id}`} />}>
+              Follow this order
+            </Button>
+          ) : (
+            <>
+              <Button className="h-12 px-5" nativeButton={false} render={<Link href={`/track?order=${order.id}`} />}>
+                Track with email
+              </Button>
+              <Button variant="outline" className="h-12 px-5" nativeButton={false} render={<Link href="/account/register" />}>
+                Create an account
+              </Button>
+            </>
+          )}
+        </div>
       </div>
     );
   }
@@ -292,6 +320,11 @@ export function CheckoutForm() {
           <Price usd={totalUsd + (quote?.usd ?? 0)} />
         </div>
         <p className="mt-4 text-xs leading-5 text-muted-foreground">
+          {customer
+            ? `Signed in as ${customer.email}. This order stays in that account.`
+            : "Sign in before placing the order if you want it in your history. Guests can still track it with the order number and email."}{" "}
+        </p>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">
           {quote
             ? `${quote.zone}, ${quote.days}. ${shippingNote}`
             : shippingNote}{" "}

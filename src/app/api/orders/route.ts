@@ -1,4 +1,5 @@
 import { connection, NextResponse } from "next/server";
+import { readCustomer } from "@/lib/customer-auth";
 import { shippingCountries } from "@/lib/shipping";
 import { notifyShop, placeOrder, setEmailStatus, type OrderDraft } from "@/lib/store";
 
@@ -42,7 +43,18 @@ export async function POST(request: Request) {
     qty: typeof line.qty === "number" ? line.qty : 0,
   }));
 
-  const placed = await placeOrder({ name, email, country, city, address, note, currency, lines });
+  const customer = await readCustomer();
+  const placed = await placeOrder({
+    name,
+    email,
+    country,
+    city,
+    address,
+    note,
+    currency,
+    lines,
+    customerId: customer?.id ?? null,
+  });
   if ("error" in placed) return NextResponse.json({ error: placed.error }, { status: 409 });
 
   const emailStatus = await notifyShop(placed.order);

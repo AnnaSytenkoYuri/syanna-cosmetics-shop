@@ -44,6 +44,10 @@ const questions = [
     q: "Does this preview take payment?",
     a: "No card. Checkout saves the order for the shop desk and can email it when Resend is configured. Shipping is a sample rate by country.",
   },
+  {
+    q: "Can a customer keep an account?",
+    a: "Yes. Register and sign in, then orders placed from that account stay in the history. The shop desk moves each one through placed, packing, shipped, and delivered, and can add a tracking number. A guest can look the same parcel up with the order number and email.",
+  },
 ];
 
 export default function AboutPage() {

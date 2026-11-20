@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import { Menu } from "lucide-react";
+import { useAccount } from "@/components/account-session";
 import { useShop } from "@/components/shop-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,7 @@ const links = [
 export function SiteHeader() {
   const pathname = usePathname();
   const { count, currency, setCurrency } = useShop();
+  const { customer, ready } = useAccount();
   const live = useAfterHydration();
   const shownCount = live ? count : 0;
   const shownCurrency = live ? currency : "USD";
@@ -40,7 +42,7 @@ export function SiteHeader() {
   return (
     <div className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
       <p className="border-b border-border px-5 py-2 text-center text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-        Demo shop. Orders are saved for the desk. Nothing is charged.
+        Sign in to keep an order and follow the parcel. Nothing is charged.
       </p>
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-5 md:px-8">
         <Link href="/" className="font-serif text-[1.35rem] leading-none tracking-tight">
@@ -80,6 +82,9 @@ export function SiteHeader() {
               </button>
             ))}
           </div>
+          <Link href={live && ready && customer ? "/account" : "/account/login"} className="px-2 text-sm">
+            {live && ready && customer ? customer.name.split(" ")[0] : "Account"}
+          </Link>
           <Link
             href="/cart"
             className="px-2 text-sm"
@@ -118,6 +123,16 @@ export function SiteHeader() {
                 ))}
                 <Link href="/cart" className="border-b border-border py-4 text-lg" onClick={() => setOpen(false)}>
                   Bag ({shownCount})
+                </Link>
+                <Link
+                  href={live && ready && customer ? "/account" : "/account/login"}
+                  className="border-b border-border py-4 text-lg"
+                  onClick={() => setOpen(false)}
+                >
+                  {live && ready && customer ? "Your account" : "Sign in"}
+                </Link>
+                <Link href="/track" className="border-b border-border py-4 text-lg" onClick={() => setOpen(false)}>
+                  Track
                 </Link>
               </nav>
               <div className="mt-6 flex px-4" role="group" aria-label="Currency">

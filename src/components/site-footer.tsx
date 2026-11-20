@@ -35,6 +35,16 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/account" className="hover:underline">
+                Account
+              </Link>
+            </li>
+            <li>
+              <Link href="/track" className="hover:underline">
+                Track a parcel
+              </Link>
+            </li>
+            <li>
               <Link href="/admin" className="hover:underline">
                 Shop desk
               </Link>
