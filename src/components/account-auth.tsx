@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { announceAccount, useAccount } from "@/components/account-session";
@@ -17,9 +17,12 @@ export function AccountAuth({ mode }: { mode: "login" | "register" }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const register = mode === "register";
+  const redirectedFor = useRef<string | null>(null);
 
   useEffect(() => {
-    if (ready && customer) router.replace("/account");
+    if (!ready || !customer || redirectedFor.current === customer.id) return;
+    redirectedFor.current = customer.id;
+    router.replace("/account");
   }, [customer, ready, router]);
 
   return (
@@ -43,7 +46,6 @@ export function AccountAuth({ mode }: { mode: "login" | "register" }) {
             }
             announceAccount();
             router.replace("/account");
-            router.refresh();
           } catch {
             setError("The account could not be opened.");
           } finally {

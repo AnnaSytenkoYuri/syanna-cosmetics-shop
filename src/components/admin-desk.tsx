@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -57,16 +57,27 @@ export function AdminLogin() {
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState(false);
   const [configured, setConfigured] = useState(true);
+  const redirected = useRef(false);
 
   useEffect(() => {
+    let stop = false;
     void fetch("/api/admin/session")
       .then((response) => response.json())
       .then((data: { signedIn?: boolean; devFallback?: boolean; configured?: boolean }) => {
-        if (data.signedIn) router.replace("/admin");
+        if (stop) return;
+        if (data.signedIn && !redirected.current) {
+          redirected.current = true;
+          router.replace("/admin");
+        }
         setHint(Boolean(data.devFallback));
         setConfigured(data.configured !== false);
       })
-      .catch(() => setError("The shop desk could not be reached."));
+      .catch(() => {
+        if (!stop) setError("The shop desk could not be reached.");
+      });
+    return () => {
+      stop = true;
+    };
   }, [router]);
 
   return (
@@ -89,7 +100,6 @@ export function AdminLogin() {
               return;
             }
             router.replace("/admin");
-            router.refresh();
           } catch {
             setError("The shop desk could not be reached.");
           } finally {
@@ -138,13 +148,19 @@ export function AdminDesk() {
   const [customers, setCustomers] = useState<CustomerRow[]>([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const redirected = useRef(false);
 
   useEffect(() => {
+    let stop = false;
     void (async () => {
       const session = await fetch("/api/admin/session");
+      if (stop) return;
       const gate = (await session.json()) as { signedIn?: boolean };
       if (!gate.signedIn) {
-        router.replace("/admin/login");
+        if (!redirected.current) {
+          redirected.current = true;
+          router.replace("/admin/login");
+        }
         return;
       }
       const [productResponse, orderResponse, customerResponse] = await Promise.all([
@@ -152,8 +168,12 @@ export function AdminDesk() {
         fetch("/api/admin/orders"),
         fetch("/api/admin/customers"),
       ]);
+      if (stop) return;
       if (productResponse.status === 401 || orderResponse.status === 401) {
-        router.replace("/admin/login");
+        if (!redirected.current) {
+          redirected.current = true;
+          router.replace("/admin/login");
+        }
         return;
       }
       const productData = (await productResponse.json()) as { products?: ListingRow[]; error?: string };
@@ -169,6 +189,9 @@ export function AdminDesk() {
       setCustomers(customerData.customers ?? []);
       setReady(true);
     })();
+    return () => {
+      stop = true;
+    };
   }, [router]);
 
   function editOrder(id: string, patch: Partial<SavedOrder>) {
@@ -213,7 +236,6 @@ export function AdminDesk() {
           onClick={() => {
             void fetch("/api/admin/logout", { method: "POST" }).finally(() => {
               router.replace("/admin/login");
-              router.refresh();
             });
           }}
         >

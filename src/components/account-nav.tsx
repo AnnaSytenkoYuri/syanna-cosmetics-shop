@@ -40,7 +40,6 @@ export function AccountNav() {
           void fetch("/api/account/logout", { method: "POST" }).finally(() => {
             announceAccount();
             router.replace("/account/login");
-            router.refresh();
           });
         }}
       >

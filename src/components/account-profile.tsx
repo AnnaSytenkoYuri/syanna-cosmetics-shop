@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AccountNav } from "@/components/account-nav";
 import { announceAccount, useAccount } from "@/components/account-session";
@@ -23,9 +23,16 @@ export function AccountProfile() {
   const [nextPassword, setNextPassword] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
+  const redirected = useRef(false);
 
   useEffect(() => {
-    if (ready && !customer) router.replace("/account/login");
+    if (!ready || customer) {
+      redirected.current = false;
+      return;
+    }
+    if (redirected.current) return;
+    redirected.current = true;
+    router.replace("/account/login");
   }, [customer, ready, router]);
 
   if (!ready || !customer) return <div className="h-64 animate-pulse bg-muted" />;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AccountNav } from "@/components/account-nav";
@@ -15,6 +15,7 @@ export function AccountOrders() {
   const { customer, ready } = useAccount();
   const [orders, setOrders] = useState<TrackedOrder[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const redirected = useRef(false);
 
   useEffect(() => {
     if (!customer) return;
@@ -27,7 +28,13 @@ export function AccountOrders() {
   }, [customer]);
 
   useEffect(() => {
-    if (ready && !customer) router.replace("/account/login");
+    if (!ready || customer) {
+      redirected.current = false;
+      return;
+    }
+    if (redirected.current) return;
+    redirected.current = true;
+    router.replace("/account/login");
   }, [customer, ready, router]);
 
   if (!ready || !customer || !loaded) return <div className="h-64 animate-pulse bg-muted" />;
@@ -73,6 +80,7 @@ export function AccountOrder({ id }: { id: string }) {
   const { customer, ready } = useAccount();
   const [order, setOrder] = useState<TrackedOrder | null>(null);
   const [missing, setMissing] = useState(false);
+  const redirected = useRef(false);
 
   useEffect(() => {
     if (!customer) return;
@@ -87,7 +95,13 @@ export function AccountOrder({ id }: { id: string }) {
   }, [customer, id]);
 
   useEffect(() => {
-    if (ready && !customer) router.replace("/account/login");
+    if (!ready || customer) {
+      redirected.current = false;
+      return;
+    }
+    if (redirected.current) return;
+    redirected.current = true;
+    router.replace("/account/login");
   }, [customer, ready, router]);
 
   if (!ready || !customer || (!order && !missing)) return <div className="h-64 animate-pulse bg-muted" />;

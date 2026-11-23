@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { AccountOrder } from "@/components/account-orders";
 
 export const metadata: Metadata = {
@@ -6,7 +7,21 @@ export const metadata: Metadata = {
   description: "Status and tracking for a Room & Sun order.",
 };
 
-export default async function AccountOrderPage({ params }: { params: Promise<{ id: string }> }) {
+export default function AccountOrderPage({ params }: { params: Promise<{ id: string }> }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="mx-auto w-full max-w-6xl px-5 py-14 md:px-8">
+          <div className="h-64 animate-pulse bg-muted" />
+        </div>
+      }
+    >
+      <OrderContent params={params} />
+    </Suspense>
+  );
+}
+
+async function OrderContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-14 md:px-8">

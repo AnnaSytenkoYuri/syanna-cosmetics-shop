@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { AddToCart } from "@/components/add-to-cart";
 import { StockNote } from "@/components/stock-note";
 import { Price } from "@/components/price";
@@ -29,7 +30,31 @@ export async function generateMetadata({
   return { title: product.name, description: product.summary };
 }
 
-export default async function ProductPage({
+export default function ProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  return (
+    <Suspense fallback={<ProductFallback />}>
+      <ProductContent params={params} />
+    </Suspense>
+  );
+}
+
+function ProductFallback() {
+  return (
+    <div className="mx-auto w-full max-w-6xl px-5 py-12 md:px-8" aria-hidden="true">
+      <div className="h-4 w-24 animate-pulse bg-muted" />
+      <div className="mt-6 grid gap-10 lg:grid-cols-2">
+        <div className="aspect-[4/5] animate-pulse bg-muted" />
+        <div className="h-80 animate-pulse bg-muted" />
+      </div>
+    </div>
+  );
+}
+
+async function ProductContent({
   params,
 }: {
   params: Promise<{ slug: string }>;

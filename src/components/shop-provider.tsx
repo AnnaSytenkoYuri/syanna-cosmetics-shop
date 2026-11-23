@@ -157,8 +157,10 @@ async function refreshCatalog() {
   try {
     const response = await fetch("/api/catalog");
     if (!response.ok) return;
-    const data = (await response.json()) as { products: Catalog };
-    commit({ ...snapshot, catalog: data.products });
+    const data = (await response.json()) as { products?: Catalog };
+    const products = data.products ?? {};
+    if (JSON.stringify(products) === JSON.stringify(snapshot.catalog)) return;
+    commit({ ...snapshot, catalog: products });
   } catch {
     // Sample prices stay in place when the catalog cannot be read.
   }
@@ -260,11 +262,14 @@ export function ShopProvider({ children }: { children: React.ReactNode }) {
     function onAccount() {
       void adoptAccount();
     }
-    window.addEventListener("focus", refresh);
+    function onVisible() {
+      if (document.visibilityState === "visible") void refreshCatalog();
+    }
+    document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("rs-catalog", refresh);
     window.addEventListener("rs-account", onAccount);
     return () => {
-      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("rs-catalog", refresh);
       window.removeEventListener("rs-account", onAccount);
     };
