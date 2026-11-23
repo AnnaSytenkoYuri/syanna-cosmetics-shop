@@ -25,9 +25,8 @@ export function CartView() {
       <div className="border border-dashed border-border px-6 py-16">
         <p className="font-serif text-4xl">The bag is empty.</p>
         <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-          The line is four products and one set. Start with the set if you want
-          the whole idea, or with Water Veil if you want the single piece the
-          brand hangs on.
+          The bag follows the signed-in account. Signing out puts those products away.
+          The line is four products and one set.
         </p>
         <Button className="mt-8 h-12 px-5" nativeButton={false}
           render={<Link href="/shop" />}>

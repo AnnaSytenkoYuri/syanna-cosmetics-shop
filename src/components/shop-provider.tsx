@@ -6,7 +6,8 @@ import { defaultStock, type Listing } from "@/lib/catalog";
 import { getProduct, type Product } from "@/lib/products";
 import type { Currency } from "@/lib/money";
 
-const CART_KEY = "room-and-sun-cart";
+const GUEST_CART_KEY = "room-and-sun-cart-guest";
+const LEGACY_CART_KEY = "room-and-sun-cart";
 const CURRENCY_KEY = "room-and-sun-currency";
 const MAX_QTY = 6;
 
@@ -29,7 +30,9 @@ const initialSnapshot: Snapshot = {
 };
 
 let snapshot: Snapshot = initialSnapshot;
+let owner: "guest" | string = "guest";
 const listeners = new Set<() => void>();
+let adoptGeneration = 0;
 
 function readJson<T>(key: string, fallback: T): T {
   try {
@@ -52,9 +55,38 @@ function sanitizeLines(value: unknown): CartLine[] {
   });
 }
 
+function readGuestLines(): CartLine[] {
+  localStorage.removeItem(LEGACY_CART_KEY);
+  return sanitizeLines(readJson<unknown>(GUEST_CART_KEY, []));
+}
+
+function writeGuestLines(lines: CartLine[]) {
+  localStorage.setItem(GUEST_CART_KEY, JSON.stringify(lines));
+  localStorage.removeItem(LEGACY_CART_KEY);
+}
+
 function persist(next: Snapshot) {
-  localStorage.setItem(CART_KEY, JSON.stringify(next.lines));
   localStorage.setItem(CURRENCY_KEY, JSON.stringify(next.currency));
+  if (owner === "guest") writeGuestLines(next.lines);
+}
+
+function saveAccountLines(customerId: string, lines: CartLine[]) {
+  void fetch("/api/account/cart", {
+    method: "PUT",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ lines }),
+    keepalive: true,
+  });
+}
+
+function mergeLines(base: CartLine[], extra: CartLine[]) {
+  const lines = base.map((line) => ({ ...line }));
+  for (const line of extra) {
+    const existing = lines.find((item) => item.slug === line.slug);
+    if (existing) existing.qty = Math.min(MAX_QTY, existing.qty + line.qty);
+    else if (lines.length < 10) lines.push({ ...line });
+  }
+  return lines;
 }
 
 function commit(next: Snapshot) {
@@ -63,15 +95,62 @@ function commit(next: Snapshot) {
   listeners.forEach((listener) => listener());
 }
 
-function loadFromBrowser() {
-  if (snapshot !== initialSnapshot) return;
-  const storedCurrency = readJson<unknown>(CURRENCY_KEY, "USD");
+function storedCurrency(): "USD" | "THB" {
+  return readJson<unknown>(CURRENCY_KEY, snapshot.currency) === "THB" ? "THB" : "USD";
+}
+
+async function adoptAccount() {
+  const generation = ++adoptGeneration;
+  let customerId: string | null = null;
+  try {
+    const response = await fetch("/api/account/session");
+    if (!response.ok) return;
+    const data = (await response.json()) as { customer?: { id?: string } | null };
+    customerId = data.customer?.id ?? null;
+  } catch {
+    if (snapshot.ready) return;
+    customerId = null;
+  }
+  if (generation !== adoptGeneration) return;
+
+  if (!customerId) {
+    owner = "guest";
+    commit({
+      currency: storedCurrency(),
+      lines: readGuestLines(),
+      catalog: snapshot.catalog,
+      ready: true,
+    });
+    return;
+  }
+
+  if (owner === customerId && snapshot.ready) return;
+
+  let remote: CartLine[] = [];
+  try {
+    const response = await fetch("/api/account/cart");
+    if (response.ok) {
+      const data = (await response.json()) as { lines?: unknown };
+      remote = sanitizeLines(data.lines);
+    }
+  } catch {
+    remote = [];
+  }
+  if (generation !== adoptGeneration) return;
+
+  const guestLines = owner === "guest" ? (snapshot.ready ? snapshot.lines : readGuestLines()) : [];
+  const lines = guestLines.length > 0 ? mergeLines(remote, guestLines) : remote;
+  owner = customerId;
   commit({
-    currency: storedCurrency === "THB" ? "THB" : "USD",
-    lines: sanitizeLines(readJson<unknown>(CART_KEY, [])),
-    catalog: {},
+    currency: storedCurrency(),
+    lines,
+    catalog: snapshot.catalog,
     ready: true,
   });
+  if (guestLines.length > 0) {
+    writeGuestLines([]);
+    saveAccountLines(customerId, lines);
+  }
 }
 
 async function refreshCatalog() {
@@ -99,12 +178,14 @@ function subscribe(listener: () => void) {
 }
 
 function update(partial: Partial<Pick<Snapshot, "currency" | "lines">>) {
+  const lines = partial.lines ?? snapshot.lines;
   commit({
     currency: partial.currency ?? snapshot.currency,
-    lines: partial.lines ?? snapshot.lines,
+    lines,
     catalog: snapshot.catalog,
     ready: true,
   });
+  if (partial.lines && owner !== "guest") saveAccountLines(owner, lines);
 }
 
 function limitFor(slug: string) {
@@ -171,16 +252,21 @@ const ShopContext = createContext<ShopContextValue | null>(null);
 export function ShopProvider({ children }: { children: React.ReactNode }) {
   const snap = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   useEffect(() => {
-    loadFromBrowser();
+    void adoptAccount();
     void refreshCatalog();
     function refresh() {
       void refreshCatalog();
     }
+    function onAccount() {
+      void adoptAccount();
+    }
     window.addEventListener("focus", refresh);
     window.addEventListener("rs-catalog", refresh);
+    window.addEventListener("rs-account", onAccount);
     return () => {
       window.removeEventListener("focus", refresh);
       window.removeEventListener("rs-catalog", refresh);
+      window.removeEventListener("rs-account", onAccount);
     };
   }, []);
   const items = useMemo(

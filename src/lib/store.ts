@@ -39,7 +39,10 @@ export type SavedOrder = {
   events: OrderEvent[];
 };
 
-type Customer = PublicCustomer & { passwordHash: string };
+type Customer = PublicCustomer & {
+  passwordHash: string;
+  cart: { slug: string; qty: number }[];
+};
 
 type Session = { id: string; expires: number };
 
@@ -112,9 +115,12 @@ function read(): Store {
     const parsed = JSON.parse(readFileSync(filePath, "utf8")) as Partial<Store>;
     const base = seed();
     const customers = Array.isArray(parsed.customers)
-      ? parsed.customers.filter(
-          (customer) => customer && typeof customer.id === "string" && typeof customer.email === "string" && typeof customer.passwordHash === "string",
-        )
+      ? parsed.customers.flatMap((customer) => {
+          if (!customer || typeof customer.id !== "string" || typeof customer.email !== "string" || typeof customer.passwordHash !== "string") {
+            return [];
+          }
+          return [{ ...customer, cart: sanitizeCart(customer.cart) }];
+        })
       : [];
     return {
       products: { ...base.products, ...parsed.products },
@@ -136,6 +142,23 @@ function write(store: Store) {
   const temp = `${filePath}.tmp`;
   writeFileSync(temp, JSON.stringify(store, null, 2));
   renameSync(temp, filePath);
+}
+
+function sanitizeCart(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  const lines: { slug: string; qty: number }[] = [];
+  for (const line of value) {
+    if (!line || typeof line !== "object") continue;
+    const slug = "slug" in line && typeof line.slug === "string" ? line.slug : "";
+    const qty = "qty" in line && typeof line.qty === "number" ? Math.floor(line.qty) : 0;
+    if (!products.some((product) => product.slug === slug) || qty < 1) continue;
+    const capped = Math.min(6, qty);
+    const existing = lines.find((item) => item.slug === slug);
+    if (existing) existing.qty = Math.min(6, existing.qty + capped);
+    else lines.push({ slug, qty: capped });
+    if (lines.length >= 10) break;
+  }
+  return lines;
 }
 
 function locked<T>(fn: () => T): Promise<T> {
@@ -300,6 +323,21 @@ export function listOrders() {
   return locked(() => read().orders);
 }
 
+export function readCustomerCart(customerId: string) {
+  return locked(() => read().customers.find((customer) => customer.id === customerId)?.cart ?? []);
+}
+
+export function writeCustomerCart(customerId: string, lines: unknown) {
+  return locked(() => {
+    const store = read();
+    const customer = store.customers.find((item) => item.id === customerId);
+    if (!customer) return { error: "Sign in required." };
+    customer.cart = sanitizeCart(lines);
+    write(store);
+    return { lines: customer.cart };
+  });
+}
+
 function publicCustomer(customer: Customer): PublicCustomer {
   return {
     id: customer.id,
@@ -363,6 +401,7 @@ export function registerCustomer(input: { name: string; email: string; password:
       city: "",
       address: "",
       passwordHash: hashPassword(input.password),
+      cart: [],
       createdAt: new Date().toISOString(),
     };
     store.customers.push(customer);
