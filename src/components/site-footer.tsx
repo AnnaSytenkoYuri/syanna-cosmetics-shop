@@ -5,10 +5,10 @@ export function SiteFooter() {
     <footer className="mt-20 border-t border-border">
       <div className="mx-auto grid w-full max-w-6xl gap-10 px-5 py-12 md:grid-cols-3 md:px-8">
         <div>
-          <p className="font-serif text-2xl">Room & Sun</p>
+          <p className="font-serif text-2xl">Syanna Cosmetics</p>
           <p className="mt-3 max-w-xs text-sm leading-6 text-muted-foreground">
-            Skincare for hot air outside and dry air inside. A brand preview,
-            written from Bangkok.
+            An international skincare brand. Climate Care is the first collection,
+            for hot humid air outside and dry air-conditioned rooms. Nothing is for sale yet.
           </p>
         </div>
         <div className="text-sm">
@@ -26,7 +26,7 @@ export function SiteFooter() {
             </li>
             <li>
               <Link href="/about" className="hover:underline">
-                The idea
+                About
               </Link>
             </li>
             <li>
@@ -44,17 +44,11 @@ export function SiteFooter() {
                 Track a parcel
               </Link>
             </li>
-            <li>
-              <Link href="/admin" className="hover:underline">
-                Shop desk
-              </Link>
-            </li>
           </ul>
         </div>
         <div className="text-sm leading-6 text-muted-foreground">
           <p>
-            Sample prices. Sample formulas. No warehouse, no card charge, no
-            medical claims.
+            Sample formulas. Nothing is for sale yet. No medical claims.
           </p>
           <p className="mt-3">
             Cosmetic care only. Not a drug, not sunscreen, not a treatment.

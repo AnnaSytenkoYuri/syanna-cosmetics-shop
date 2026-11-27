@@ -3,80 +3,66 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  title: "The idea",
+  title: "About",
   description:
-    "A cosmetics brand for people whose skin moves between hot air and dry rooms, and how a company in Thailand could start it.",
+    "Syanna Cosmetics is an international skincare brand. Climate Care is the first collection, and nothing is for sale yet.",
 };
 
-const steps = [
+const order = [
   {
-    title: "Make two products, not twelve.",
-    body: "Water Veil and Shade Gel are enough to test whether anyone wants the idea. Day Wash and Cabin Balm can wait for a second run. A manufacturer will ask for a minimum per product, so a short line is the difference between a test and a warehouse.",
+    title: "Water Veil",
+    body: "The planned first product. A hydrating serum. The formula on this site is a sample.",
   },
   {
-    title: "Register a company where the factory and the bank are.",
-    body: "A Thai company is the practical door: a local manufacturer, a local bank, and Stripe, which accepts businesses registered in Thailand and can take cards from customers in other countries. Citizenship does not replace a company, a visa that allows the work, or an accountant. Those are questions for a Thai lawyer, not for a website.",
+    title: "Shade Gel",
+    body: "The planned second product. A lightweight moisturizer for heat. It is not sunscreen.",
   },
   {
-    title: "Order samples before a big batch.",
-    body: "Ask a cosmetics manufacturer in Thailand, or a Korean private-label lab, for samples of a watery serum and a gel cream. The formulas on this site are illustrations. A chemist has to write the real ones, check the banned-ingredient lists, and put a real INCI on the label.",
-  },
-  {
-    title: "Sell in Thailand first. Add countries one at a time.",
-    body: "Thailand needs a cosmetic notification before you sell here. The European Union and the United Kingdom need a responsible person and a product file before you ship there. The United States needs honest cosmetic labels, and facility listing once sales grow. “Worldwide” is a later setting in the shop, not the opening week.",
+    title: "Day Wash and Cabin Balm",
+    body: "Later in the collection. They stay on the site so the idea can be read. They are not for sale.",
   },
 ];
 
 const questions = [
   {
     q: "Is this a medicine?",
-    a: "No. The products are written as cosmetics: clean, comfort, the look of skin. They do not claim to treat acne, eczema, melasma, or aging. Drug claims are how a cosmetics brand gets its payments blocked.",
+    a: "No. The writing stays with cosmetic care: clean skin, comfort, and how a product feels. It does not claim to treat acne, eczema, melasma, or aging.",
   },
   {
-    q: "Why not sunscreen on day one?",
-    a: "Because in the US a product that claims sun protection is a drug, even if the same bottle is a cosmetic in another country. Start with wash, serum, gel, and balm. Add SPF only with a lab that can register it where you actually ship.",
+    q: "Why is there no sunscreen?",
+    a: "Climate Care does not include a sunscreen. Sun protection is a separate product, and it is not part of this preview.",
   },
   {
-    q: "Can cards work, unlike a restricted category?",
-    a: "Ordinary cosmetics are a normal category for Stripe and other card processors, as long as the products are real cosmetics and the claims stay cosmetic. A processor can still review the website. Do not hide ingredients or invent a medical use.",
-  },
-  {
-    q: "Does this preview take payment?",
-    a: "No card. Checkout saves the order for the shop desk and can email it when Resend is configured. Shipping is a sample rate by country.",
-  },
-  {
-    q: "Can a customer keep an account?",
-    a: "Yes. Register and sign in, then orders placed from that account stay in the history. The shop desk moves each one through placed, packing, shipped, and delivered, and can add a tracking number. A guest can look the same parcel up with the order number and email.",
+    q: "Can I buy these products?",
+    a: "No. The formulas are samples. Manufacturing, documentation, and regulatory review are not finished, so the site does not take an order.",
   },
 ];
 
 export default function AboutPage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-5 py-14 md:px-8">
-      <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">The idea</p>
+      <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">About</p>
       <h1 className="mt-3 max-w-3xl font-serif text-5xl leading-[0.95] sm:text-6xl">
-        A small cosmetics brand for people who live between climates.
+        Syanna Cosmetics
       </h1>
       <div className="mt-8 grid gap-8 md:grid-cols-12">
         <p className="text-sm leading-7 text-foreground/80 md:col-span-6">
-          The founder picture is specific: a Ukrainian living in Thailand, with
-          skin that still expects winter and a city that does not. That is a
-          real customer, and not only one person. Expats, people who travel for
-          work, and anyone who moves from a cold apartment to a hot street every
-          morning already feel the mismatch.
+          Syanna is an international skincare brand for people who move between
+          hot, humid air outside and dry air-conditioned rooms. Climate Care is
+          the first collection. The method is short: keep the watery layer, and
+          change the last step when the air changes.
         </p>
         <p className="text-sm leading-7 text-foreground/80 md:col-span-6">
-          The brand is not “Thai spa,” and it is not a copy of a Korean routine.
-          It is two finishes. Shade Gel for heat. Cabin Balm for dry indoor air.
-          Water Veil underneath both. English on the label, because the point is
-          to sell past one country once the paperwork for that country exists.
+          Written in Bangkok, by skin that still remembers a January. That
+          sentence is the founder line. The brand is not limited to one country,
+          and this site is not a shop. Nothing here is for sale.
         </p>
       </div>
 
       <section className="mt-16">
-        <h2 className="font-serif text-4xl">How it would actually open</h2>
+        <h2 className="font-serif text-4xl">Climate Care</h2>
         <ol className="mt-8 space-y-8">
-          {steps.map((step, index) => (
+          {order.map((step, index) => (
             <li key={step.title} className="grid gap-3 border-t border-border pt-6 md:grid-cols-12">
               <p className="font-serif text-3xl text-sun-ink md:col-span-1">0{index + 1}</p>
               <h3 className="font-serif text-2xl md:col-span-4">{step.title}</h3>
@@ -88,29 +74,23 @@ export default function AboutPage() {
 
       <section className="mt-16 grid gap-10 border border-border bg-card p-6 md:grid-cols-2 md:p-10">
         <div>
-          <h2 className="font-serif text-3xl">What to charge, roughly</h2>
+          <h2 className="font-serif text-3xl">What the formulas are</h2>
           <p className="mt-4 text-sm leading-7">
-            The prices in the shop are sample retail, not a quote. A watery serum
-            near $36 and a gel cream near $32 leave room for a small brand if the
-            jar, the box, the shipper, and the ads still fit under half of that.
-            Check the real cost with two manufacturers before you fall in love
-            with a price.
+            Each product page shows a sample formula. It is not a finished
+            product, not a production specification, and not something you can buy.
           </p>
         </div>
         <div>
-          <h2 className="font-serif text-3xl">What not to promise</h2>
+          <h2 className="font-serif text-3xl">What Syanna will not claim</h2>
           <p className="mt-4 text-sm leading-7">
-            No before-and-after medical photos. No “repairs the barrier” as if it
-            were a prescription. No shipping to every flag on day one. The name
-            Room & Sun is a working title: search it as a trademark in Thailand
-            and in the countries you will actually sell to before it goes on a
-            box.
+            No medicine. No sunscreen in this collection. No reviews, no
+            certificates, and no promise that a price is final.
           </p>
         </div>
       </section>
 
       <section className="mt-16">
-        <h2 className="font-serif text-4xl">Questions worth asking first</h2>
+        <h2 className="font-serif text-4xl">Questions</h2>
         <div className="mt-6 divide-y divide-border border-y border-border">
           {questions.map((item) => (
             <details key={item.q} className="group py-4">
@@ -122,13 +102,11 @@ export default function AboutPage() {
       </section>
 
       <div className="mt-12 flex flex-wrap gap-3">
-        <Button className="h-12 px-5" nativeButton={false}
-          render={<Link href="/shop" />}>
-          Walk through the shop
+        <Button className="h-12 px-5" nativeButton={false} render={<Link href="/product/water-veil" />}>
+          Read Water Veil
         </Button>
-        <Button variant="outline" className="h-12 px-5" nativeButton={false}
-          render={<Link href="/routine" />}>
-          Read the routine
+        <Button variant="outline" className="h-12 px-5" nativeButton={false} render={<Link href="/shop" />}>
+          See the collection
         </Button>
       </div>
     </div>

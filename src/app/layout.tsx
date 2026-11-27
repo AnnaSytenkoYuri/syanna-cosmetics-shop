@@ -18,11 +18,11 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: {
-    default: "Room & Sun",
-    template: "%s · Room & Sun",
+    default: "Syanna Cosmetics",
+    template: "%s · Syanna Cosmetics",
   },
   description:
-    "A cosmetics brand preview for skin that lives in hot air outside and dry air inside. Shop, routine, and a checkout that does not charge a card.",
+    "Syanna Cosmetics is an international skincare brand. Climate Care is a preview collection for hot humid air and dry indoor air. Nothing is for sale yet.",
   robots: { index: false, follow: false },
 };
 

@@ -47,7 +47,7 @@ export function AccountOrders() {
           <div className="border border-dashed border-border px-6 py-16">
             <p className="font-serif text-4xl">No orders in this account yet.</p>
             <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-              Sign in before checkout and the order stays here, with a status the shop desk can move forward.
+              Nothing has been ordered from this account. The collection is not for sale yet.
             </p>
             <Button className="mt-8 h-12 px-5" nativeButton={false} render={<Link href="/shop" />}>
               Browse the shop

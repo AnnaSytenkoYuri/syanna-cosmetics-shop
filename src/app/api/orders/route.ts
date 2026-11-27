@@ -1,5 +1,6 @@
 import { connection, NextResponse } from "next/server";
 import { readCustomer } from "@/lib/customer-auth";
+import { purchasesOpen } from "@/lib/products";
 import { shippingCountries } from "@/lib/shipping";
 import { notifyShop, placeOrder, setEmailStatus, type OrderDraft } from "@/lib/store";
 
@@ -9,6 +10,9 @@ function clean(value: unknown, max: number) {
 
 export async function POST(request: Request) {
   await connection();
+  if (!purchasesOpen) {
+    return NextResponse.json({ error: "These products are not for sale." }, { status: 403 });
+  }
   let body: Partial<OrderDraft> & { lines?: { slug?: string; qty?: number }[] };
   try {
     body = (await request.json()) as Partial<OrderDraft> & { lines?: { slug?: string; qty?: number }[] };

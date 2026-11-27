@@ -3,7 +3,7 @@ import { AdminLogin } from "@/components/admin-desk";
 
 export const metadata: Metadata = {
   title: "Shop desk",
-  description: "Sign in to edit the Room & Sun demo.",
+  description: "Sign in to edit the Syanna Cosmetics demo.",
 };
 
 export default function AdminLoginPage() {

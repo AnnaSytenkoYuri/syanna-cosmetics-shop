@@ -3,7 +3,7 @@ import { AccountProfile } from "@/components/account-profile";
 
 export const metadata: Metadata = {
   title: "Profile",
-  description: "Name, address, and password for a Room & Sun account.",
+  description: "Name, address, and password for a Syanna Cosmetics account.",
 };
 
 export default function AccountPage() {

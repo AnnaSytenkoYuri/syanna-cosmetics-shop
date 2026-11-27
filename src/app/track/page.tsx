@@ -4,7 +4,7 @@ import { TrackLookup } from "@/components/track-lookup";
 
 export const metadata: Metadata = {
   title: "Track",
-  description: "Look up a Room & Sun parcel with the order number and email.",
+  description: "Look up a Syanna Cosmetics parcel with the order number and email.",
 };
 
 export default function TrackPage() {

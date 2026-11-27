@@ -5,7 +5,7 @@ import { routineSteps } from "@/lib/products";
 
 export const metadata: Metadata = {
   title: "Routine",
-  description: "How to use Room & Sun when the air changes through the day.",
+  description: "How to use the Climate Care collection when the air changes through the day.",
 };
 
 const scenes = [
@@ -66,7 +66,7 @@ export default function RoutinePage() {
         </p>
         <Button className="mt-6 h-12 px-5" nativeButton={false}
           render={<Link href="/about" />}>
-          How the company would open
+          About Syanna
         </Button>
       </section>
     </div>

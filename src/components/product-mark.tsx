@@ -128,7 +128,7 @@ export function ProductMark({
       {compact ? null : (
         <>
           <div className="absolute top-5 left-5 text-[11px] tracking-[0.22em] uppercase">
-            Room & Sun
+            Syanna
           </div>
           <div className="absolute right-5 bottom-5 left-5">
             <p className="font-serif text-3xl leading-none">{product.name}</p>

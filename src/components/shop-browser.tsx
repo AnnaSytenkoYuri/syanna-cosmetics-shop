@@ -7,12 +7,14 @@ import { products, climateLabel, type Climate } from "@/lib/products";
 import { rateNote } from "@/lib/money";
 
 const filters = ["all", "humid", "room", "travel"] as const;
+const displayOrder = ["water-veil", "shade-gel", "day-wash", "cabin-balm", "two-weather-set"];
 
 export function ShopBrowser() {
   const [filter, setFilter] = useState<(typeof filters)[number]>("all");
-  const visible = products.filter(
-    (product) => filter === "all" || product.climates.includes(filter as Climate),
-  );
+  const visible = products
+    .filter((product) => filter === "all" || product.climates.includes(filter as Climate))
+    .slice()
+    .sort((a, b) => displayOrder.indexOf(a.slug) - displayOrder.indexOf(b.slug));
 
   return (
     <div>

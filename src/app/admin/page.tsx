@@ -3,7 +3,7 @@ import { AdminDesk } from "@/components/admin-desk";
 
 export const metadata: Metadata = {
   title: "Shop desk",
-  description: "Prices, photos, stock, and demo orders for Room & Sun.",
+  description: "Prices, photos, stock, and demo orders for Syanna Cosmetics.",
 };
 
 export default function AdminPage() {

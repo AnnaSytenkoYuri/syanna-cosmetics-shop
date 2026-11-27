@@ -46,7 +46,7 @@ export function AccountProfile() {
       <AccountNav />
       <div className="max-w-xl space-y-10">
         <p className="text-sm leading-6 text-muted-foreground">
-          Signed in as {customer.email}. Orders placed from this account stay in the order list. Checkout still does not charge a card.
+          Signed in as {customer.email}. Orders already saved in this account stay in the list. The collection is not for sale yet.
         </p>
         {error ? (
           <p className="border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm" role="alert">
@@ -73,7 +73,7 @@ export function AccountProfile() {
               }
               setEditing(null);
               announceAccount();
-              setNotice("Profile saved. Checkout will offer this address.");
+              setNotice("Profile saved.");
             })();
           }}
         >

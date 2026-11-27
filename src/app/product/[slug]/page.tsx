@@ -10,9 +10,13 @@ import { ProductMark } from "@/components/product-mark";
 import { Badge } from "@/components/ui/badge";
 import {
   climateLabel,
+  conceptPriceNote,
   getProduct,
   products,
+  publicPriceUsd,
   relatedProducts,
+  sampleNotice,
+  stageLabel,
 } from "@/lib/products";
 
 export function generateStaticParams() {
@@ -77,10 +81,10 @@ async function ProductContent({
         {product.name}
       </p>
       <div className="mt-6 grid gap-10 lg:grid-cols-2 lg:items-start">
-        <div className="lg:sticky lg:top-32">
+        <div className="order-2 lg:order-1 lg:sticky lg:top-32">
           <ProductMark product={product} className="aspect-[4/5]" />
         </div>
-        <div>
+        <div className="order-1 lg:order-2">
           <div className="flex flex-wrap gap-2">
             {product.climates.map((climate) => (
               <Badge key={climate} variant="outline">
@@ -91,15 +95,24 @@ async function ProductContent({
           <h1 className="mt-4 font-serif text-5xl leading-none sm:text-6xl">
             {product.name}
           </h1>
+          <p className="mt-4 text-sm">{stageLabel[product.stage]}</p>
+          <p className="mt-2 max-w-md text-sm leading-6">{sampleNotice}</p>
           <p className="mt-3 text-sm text-muted-foreground">
             {product.kind} · {product.texture} · {product.size}
           </p>
-          <Price
-            usd={product.priceUsd}
-            compareAtUsd={product.compareAtUsd}
-            slug={product.slug}
-            className="mt-5 text-base"
-          />
+          {publicPriceUsd(product) === null ? (
+            <p className="mt-5 text-sm text-muted-foreground">No selling price</p>
+          ) : (
+            <>
+              <Price
+                usd={product.priceUsd}
+                compareAtUsd={product.compareAtUsd}
+                slug={product.slug}
+                className="mt-5 text-base"
+              />
+              <p className="mt-2 text-xs text-muted-foreground">{conceptPriceNote}</p>
+            </>
+          )}
           <p className="mt-6 text-base leading-7">{product.summary}</p>
           <p className="mt-4 text-sm leading-7 text-foreground/80">{product.detail}</p>
           <AddToCart slug={product.slug} withQty className="mt-8" />

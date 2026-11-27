@@ -4,7 +4,7 @@ import { AccountOrder } from "@/components/account-orders";
 
 export const metadata: Metadata = {
   title: "Order",
-  description: "Status and tracking for a Room & Sun order.",
+  description: "Status and tracking for a Syanna Cosmetics order.",
 };
 
 export default function AccountOrderPage({ params }: { params: Promise<{ id: string }> }) {

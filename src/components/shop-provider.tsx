@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { createContext, useContext } from "react";
 import { defaultStock, type Listing } from "@/lib/catalog";
-import { getProduct, type Product } from "@/lib/products";
+import { getProduct, purchasesOpen, type Product } from "@/lib/products";
 import type { Currency } from "@/lib/money";
 
+// Legacy browser keys are kept so bags saved before the Syanna rename still load.
 const GUEST_CART_KEY = "room-and-sun-cart-guest";
 const LEGACY_CART_KEY = "room-and-sun-cart";
 const CURRENCY_KEY = "room-and-sun-currency";
@@ -196,6 +197,7 @@ function limitFor(slug: string) {
 }
 
 function add(slug: string, qty = 1) {
+  if (!purchasesOpen) return;
   if (!getProduct(slug) || qty < 1) return;
   const limit = limitFor(slug);
   if (limit < 1) return;

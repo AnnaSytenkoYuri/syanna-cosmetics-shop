@@ -1,9 +1,26 @@
 export type Climate = "humid" | "room" | "travel";
 
+export type Stage = "first" | "second" | "later" | "concept";
+
+/** Closed until manufacturing, documentation, and regulatory review exist. */
+export const purchasesOpen = false;
+
+export const stageLabel: Record<Stage, string> = {
+  first: "Planned first product",
+  second: "Planned second product",
+  later: "Later in the collection",
+  concept: "Concept set, not a launch offer",
+};
+
+export const sampleNotice = "Sample formula. Not a finished product and not for sale.";
+
+export const conceptPriceNote = "Concept price. Not a selling price.";
+
 export type Product = {
   slug: string;
   name: string;
   kind: string;
+  stage: Stage;
   priceUsd: number;
   compareAtUsd?: number;
   size: string;
@@ -18,6 +35,10 @@ export type Product = {
   includes?: string[];
 };
 
+export function publicPriceUsd(product: Product): number | null {
+  return product.stage === "concept" ? null : product.priceUsd;
+}
+
 export const climateLabel: Record<Climate, string> = {
   humid: "Humid air",
   room: "Cold rooms",
@@ -29,15 +50,15 @@ export const products: Product[] = [
     slug: "two-weather-set",
     name: "Two-Weather Set",
     kind: "Three-piece routine",
+    stage: "concept",
     priceUsd: 79,
-    compareAtUsd: 90,
     size: "Wash, serum, gel",
     texture: "The daytime trio",
     climates: ["humid", "room", "travel"],
     summary:
       "Day Wash, Water Veil, and Shade Gel. The routine for a day that starts in a cold room and ends on a hot street.",
     detail:
-      "Bought separately these three are $90. The set is the simplest way to see the idea: one wash, one watery serum, one gel cream that can live in heat. Cabin Balm is not in the set. It is for flights and long hours of dry air, and it stays a separate small tin.",
+      "A concept grouping of Day Wash, Water Veil, and Shade Gel. It is not a launch offer and it has no selling price. Cabin Balm is not in the set. It is for flights and long hours of dry air, and it stays a separate small tin.",
     use: [
       "Morning in the heat: wash, veil, shade gel.",
       "Afternoon in the office: do not wash again. Press on a drop of Water Veil if your cheeks feel tight.",
@@ -61,6 +82,7 @@ export const products: Product[] = [
     slug: "day-wash",
     name: "Day Wash",
     kind: "Gel cleanser",
+    stage: "later",
     priceUsd: 22,
     size: "120 ml",
     texture: "Clear, low-foam gel",
@@ -95,6 +117,7 @@ export const products: Product[] = [
     slug: "water-veil",
     name: "Water Veil",
     kind: "Hydrating serum",
+    stage: "first",
     priceUsd: 36,
     size: "30 ml",
     texture: "Watery serum",
@@ -128,7 +151,8 @@ export const products: Product[] = [
   {
     slug: "shade-gel",
     name: "Shade Gel",
-    kind: "Gel cream",
+    kind: "Lightweight moisturizer",
+    stage: "second",
     priceUsd: 32,
     size: "50 ml",
     texture: "Cooling gel cream",
@@ -163,6 +187,7 @@ export const products: Product[] = [
     slug: "cabin-balm",
     name: "Cabin Balm",
     kind: "Face balm",
+    stage: "later",
     priceUsd: 18,
     size: "15 ml",
     texture: "Soft balm",

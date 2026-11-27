@@ -4,7 +4,7 @@ import path from "path";
 import { defaultStock, type Listing } from "@/lib/catalog";
 import type { PublicCustomer } from "@/lib/customer";
 import { isOrderStatus, type OrderEvent, type OrderStatus } from "@/lib/order-status";
-import { products } from "@/lib/products";
+import { products, purchasesOpen } from "@/lib/products";
 import { quoteShipping } from "@/lib/shipping";
 
 export type EmailStatus = "saved" | "sent" | "failed";
@@ -258,6 +258,7 @@ export function placeOrder(draft: OrderDraft): Promise<{ order: SavedOrder } | {
 }
 
 function placeOrderNow(draft: OrderDraft): { order: SavedOrder } | { error: string } {
+  if (!purchasesOpen) return { error: "These products are not for sale." };
   const quote = quoteShipping(draft.country);
   if (!quote) return { error: "Choose a country from the list." };
   if (draft.lines.length === 0) return { error: "The bag is empty." };
@@ -567,7 +568,7 @@ export async function notifyShop(order: SavedOrder): Promise<EmailStatus> {
         from,
         to: [to],
         reply_to: order.email,
-        subject: `Room & Sun demo order ${order.id}`,
+        subject: `Syanna Cosmetics demo order ${order.id}`,
         text,
       }),
     });

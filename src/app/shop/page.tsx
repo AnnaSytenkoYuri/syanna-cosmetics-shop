@@ -11,11 +11,11 @@ export default function ShopPage() {
     <div className="mx-auto w-full max-w-6xl px-5 py-14 md:px-8">
       <p className="text-xs tracking-[0.18em] text-muted-foreground uppercase">Shop</p>
       <h1 className="mt-3 max-w-2xl font-serif text-5xl leading-none sm:text-6xl">
-        Four products. One is a set of three.
+        Climate Care
       </h1>
       <p className="mt-5 max-w-xl text-sm leading-7 text-foreground/80">
-        Filter by the air you are about to be in. Humid air, a cold room, or a
-        day of travel. Prices are samples for the preview.
+        The first Syanna collection, for humid air, dry rooms, and travel.
+        Water Veil is the planned first product. Nothing here is for sale.
       </p>
       <div className="mt-10">
         <ShopBrowser />

@@ -3,7 +3,7 @@ import { AccountAuth } from "@/components/account-auth";
 
 export const metadata: Metadata = {
   title: "Create account",
-  description: "Create a Room & Sun account for order history and tracking.",
+  description: "Create a Syanna Cosmetics account for order history and tracking.",
 };
 
 export default function RegisterPage() {

@@ -3,7 +3,7 @@ import { AccountOrders } from "@/components/account-orders";
 
 export const metadata: Metadata = {
   title: "Orders",
-  description: "Orders placed while signed in to Room & Sun.",
+  description: "Orders placed while signed in to Syanna Cosmetics.",
 };
 
 export default function OrdersPage() {

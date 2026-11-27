@@ -6,14 +6,15 @@ import { useShop } from "@/components/shop-provider";
 import { Price } from "@/components/price";
 import { ProductMark } from "@/components/product-mark";
 import { Badge } from "@/components/ui/badge";
-import { climateLabel, type Product } from "@/lib/products";
+import { climateLabel, conceptPriceNote, publicPriceUsd, purchasesOpen, sampleNotice, stageLabel, type Product } from "@/lib/products";
 
 export function ProductCard({ product }: { product: Product }) {
   const { priceFor, imageFor, stockFor } = useShop();
-  const price = priceFor(product.slug, product.priceUsd);
+  const listed = publicPriceUsd(product);
+  const price = listed === null ? 0 : priceFor(product.slug, listed);
   const soldOut = stockFor(product.slug) <= 0;
   const compareAt =
-    product.compareAtUsd && product.compareAtUsd > price ? product.compareAtUsd : undefined;
+    listed !== null && product.compareAtUsd && product.compareAtUsd > price ? product.compareAtUsd : undefined;
 
   return (
     <article className="flex h-full flex-col">
@@ -34,12 +35,21 @@ export function ProductCard({ product }: { product: Product }) {
           <p className="mt-2 text-sm text-muted-foreground">
             {product.kind} · {product.size}
           </p>
+          <p className="mt-2 text-sm">{stageLabel[product.stage]}</p>
         </div>
-        <Price usd={price} compareAtUsd={compareAt} />
+        {listed === null ? (
+          <p className="text-sm text-muted-foreground">No selling price</p>
+        ) : (
+          <Price usd={price} compareAtUsd={compareAt} />
+        )}
       </div>
+      {listed === null ? null : (
+        <p className="mt-2 text-xs text-muted-foreground">{conceptPriceNote}</p>
+      )}
+      <p className="mt-2 text-sm leading-6">{sampleNotice}</p>
       <p className="mt-3 text-sm leading-6 text-foreground/80">{product.summary}</p>
       <div className="mt-4 flex flex-wrap gap-2">
-        {soldOut ? <Badge>Sold out</Badge> : null}
+        {purchasesOpen && soldOut ? <Badge>Sold out</Badge> : null}
         {product.climates.map((climate) => (
           <Badge key={climate} variant="outline">
             {climateLabel[climate]}

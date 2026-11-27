@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useShop } from "@/components/shop-provider";
 import { rateNote } from "@/lib/money";
+import { conceptPriceNote, publicPriceUsd, purchasesOpen } from "@/lib/products";
 
 export function CartView() {
-  const { hydrated, items, totalUsd, setQty, remove, imageFor } = useShop();
+  const { hydrated, items, setQty, remove, imageFor } = useShop();
 
   if (!hydrated) {
     return (
@@ -26,7 +27,7 @@ export function CartView() {
         <p className="font-serif text-4xl">The bag is empty.</p>
         <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
           The bag follows the signed-in account. Signing out puts those products away.
-          The line is four products and one set.
+          Climate Care is not for sale yet.
         </p>
         <Button className="mt-8 h-12 px-5" nativeButton={false}
           render={<Link href="/shop" />}>
@@ -60,7 +61,11 @@ export function CartView() {
                   </Link>
                   <p className="mt-2 text-sm text-muted-foreground">{product.size}</p>
                 </div>
-                <Price usd={product.priceUsd * qty} />
+                {publicPriceUsd(product) === null ? (
+                  <p className="text-sm text-muted-foreground">No selling price</p>
+                ) : (
+                  <Price usd={product.priceUsd * qty} />
+                )}
               </div>
               <div className="mt-4 flex items-center gap-4">
                 <div className="flex h-10 items-center border border-border">
@@ -99,17 +104,27 @@ export function CartView() {
         <Separator className="my-4" />
         <div className="flex items-center justify-between text-sm">
           <span>Subtotal</span>
-          <Price usd={totalUsd} />
+          <Price
+            usd={items.reduce(
+              (sum, item) => sum + (publicPriceUsd(item.product) ?? 0) * item.qty,
+              0,
+            )}
+          />
         </div>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Shipping is not calculated. This preview does not charge a card or
-          reserve stock.
+          {purchasesOpen
+            ? "Shipping is not calculated. This preview does not charge a card or reserve stock."
+            : "These products are not for sale. Checkout is closed, and this bag cannot become an order."}{" "}
+          {conceptPriceNote}
         </p>
         <p className="mt-3 text-xs leading-5 text-muted-foreground">{rateNote}</p>
-        <Button className="mt-6 h-12 w-full" nativeButton={false}
-          render={<Link href="/checkout" />}>
-          Continue to checkout
-        </Button>
+        {purchasesOpen ? (
+          <Button className="mt-6 h-12 w-full" nativeButton={false} render={<Link href="/checkout" />}>
+            Continue to checkout
+          </Button>
+        ) : (
+          <p className="mt-6 text-sm">Not for sale</p>
+        )}
       </aside>
     </div>
   );

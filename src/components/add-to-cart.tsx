@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useShop } from "@/components/shop-provider";
+import { purchasesOpen } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 export function AddToCart({
@@ -22,11 +23,12 @@ export function AddToCart({
   const stock = stockFor(slug);
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const soldOut = stock <= 0;
+  const closed = !purchasesOpen;
+  const soldOut = !closed && stock <= 0;
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      {withQty ? (
+      {withQty && !closed ? (
         <div className="flex h-12 items-center border border-border">
           <button
             type="button"
@@ -50,14 +52,15 @@ export function AddToCart({
       <Button
         type="button"
         className={cn("h-12 px-5", buttonClassName)}
-        disabled={soldOut}
+        disabled={closed || soldOut}
         onClick={() => {
+          if (closed) return;
           add(slug, withQty ? qty : 1);
           setAdded(true);
           window.setTimeout(() => setAdded(false), 1400);
         }}
       >
-        {soldOut ? "Sold out" : added ? "Added" : label}
+        {closed ? "Not for sale" : soldOut ? "Sold out" : added ? "Added" : label}
       </Button>
     </div>
   );

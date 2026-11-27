@@ -27,7 +27,7 @@ function useAfterHydration() {
 const links = [
   { href: "/shop", label: "Shop" },
   { href: "/routine", label: "Routine" },
-  { href: "/about", label: "The idea" },
+  { href: "/about", label: "About" },
 ];
 
 export function SiteHeader() {
@@ -42,11 +42,11 @@ export function SiteHeader() {
   return (
     <div className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
       <p className="border-b border-border px-5 py-2 text-center text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
-        Sign in to keep an order and follow the parcel. Nothing is charged.
+        A preview of Climate Care. Nothing is for sale yet.
       </p>
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-5 md:px-8">
         <Link href="/" className="font-serif text-[1.35rem] leading-none tracking-tight">
-          Room & Sun
+          Syanna
         </Link>
         <nav className="ml-6 hidden items-center gap-6 md:flex">
           {links.map((link) => (
@@ -108,7 +108,7 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-sm">
               <SheetHeader>
-                <SheetTitle className="font-serif text-2xl">Room & Sun</SheetTitle>
+                <SheetTitle className="font-serif text-2xl">Syanna</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-1 px-4">
                 {links.map((link) => (

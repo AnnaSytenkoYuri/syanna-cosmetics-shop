@@ -3,7 +3,7 @@ import { AccountAuth } from "@/components/account-auth";
 
 export const metadata: Metadata = {
   title: "Sign in",
-  description: "Sign in to Room & Sun to see your orders.",
+  description: "Sign in to Syanna Cosmetics to see your orders.",
 };
 
 export default function LoginPage() {

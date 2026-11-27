@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useShop } from "@/components/shop-provider";
 import { formatMoney } from "@/lib/money";
+import { conceptPriceNote, publicPriceUsd, purchasesOpen } from "@/lib/products";
 import { quoteShipping, shippingCountries, shippingNote } from "@/lib/shipping";
 
 type PlacedOrder = {
@@ -49,7 +50,7 @@ function validate(values: typeof empty) {
 }
 
 export function CheckoutForm() {
-  const { hydrated, items, totalUsd, currency, clear } = useShop();
+  const { hydrated, items, currency, clear } = useShop();
   const { customer } = useAccount();
   const [values, setValues] = useState(empty);
   const [errors, setErrors] = useState<Partial<Record<Field, string>>>({});
@@ -140,7 +141,7 @@ export function CheckoutForm() {
       <div className="border border-dashed border-border px-6 py-16">
         <p className="font-serif text-4xl">Nothing to check out.</p>
         <p className="mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-          Add a product first. This demo saves the order for the shop desk and does not charge a card.
+          The collection is not for sale, so there is nothing to order.
         </p>
         <Button className="mt-8 h-12 px-5" nativeButton={false} render={<Link href="/shop" />}>
           Browse the shop
@@ -158,6 +159,10 @@ export function CheckoutForm() {
       className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr]"
       onSubmit={(event) => {
         event.preventDefault();
+        if (!purchasesOpen) {
+          setFormError("These products are not for sale.");
+          return;
+        }
         const nextErrors = validate(values);
         setErrors(nextErrors);
         setFormError("");
@@ -197,6 +202,11 @@ export function CheckoutForm() {
       noValidate
     >
       <div className="space-y-5">
+        {purchasesOpen ? null : (
+          <p className="border border-border px-4 py-3 text-sm leading-6" role="status">
+            Checkout is closed. Syanna Cosmetics is not taking orders, and nothing on this page is for sale.
+          </p>
+        )}
         {Object.keys(errors).length > 0 || formError ? (
           <p className="border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm" role="alert">
             {formError || "The form still needs a few details."}
@@ -242,17 +252,9 @@ export function CheckoutForm() {
             ))}
           </select>
         </Field>
-        {values.country === "United States" ? (
+        {values.country === "United States" || values.country === "Somewhere else" ? (
           <p className="text-sm leading-6 text-muted-foreground">
-            Cosmetics sold into the US need correct labels and, past a small
-            sales line, an FDA listing. This preview does not check that.
-            Sunscreen is a separate, harder product and is not in this shop.
-          </p>
-        ) : null}
-        {values.country === "Somewhere else" ? (
-          <p className="text-sm leading-6 text-muted-foreground">
-            A live shop would confirm this country before taking payment. Import
-            rules for cosmetics are not the same everywhere.
+            This preview does not sell into that country.
           </p>
         ) : null}
         <div className="grid gap-5 sm:grid-cols-2">
@@ -289,8 +291,8 @@ export function CheckoutForm() {
             placeholder="Skin that moves between winter and Bangkok heat"
           />
         </Field>
-        <Button type="submit" className="h-12 px-6" disabled={busy}>
-          {busy ? "Saving…" : "Place demo order"}
+        <Button type="submit" className="h-12 px-6" disabled={busy || !purchasesOpen}>
+          {purchasesOpen ? (busy ? "Saving…" : "Place demo order") : "Not for sale"}
         </Button>
       </div>
       <aside className="h-fit border border-border p-6">
@@ -302,14 +304,20 @@ export function CheckoutForm() {
               <span>
                 {product.name} × {qty}
               </span>
-              <Price usd={product.priceUsd * qty} />
+              {publicPriceUsd(product) === null ? (
+                <span className="text-muted-foreground">No selling price</span>
+              ) : (
+                <Price usd={product.priceUsd * qty} />
+              )}
             </li>
           ))}
         </ul>
         <Separator className="my-4" />
         <div className="flex justify-between text-sm">
           <span>Products</span>
-          <Price usd={totalUsd} />
+          <Price
+            usd={items.reduce((sum, item) => sum + (publicPriceUsd(item.product) ?? 0) * item.qty, 0)}
+          />
         </div>
         <div className="mt-3 flex justify-between text-sm text-muted-foreground">
           <span>Shipping</span>
@@ -317,18 +325,24 @@ export function CheckoutForm() {
         </div>
         <div className="mt-3 flex justify-between text-sm">
           <span>Total in {currency}</span>
-          <Price usd={totalUsd + (quote?.usd ?? 0)} />
+          <Price
+            usd={
+              items.reduce((sum, item) => sum + (publicPriceUsd(item.product) ?? 0) * item.qty, 0) +
+              (quote?.usd ?? 0)
+            }
+          />
         </div>
+        <p className="mt-3 text-xs leading-5 text-muted-foreground">{conceptPriceNote}</p>
         <p className="mt-4 text-xs leading-5 text-muted-foreground">
           {customer
-            ? `Signed in as ${customer.email}. This order stays in that account.`
-            : "Sign in before placing the order if you want it in your history. Guests can still track it with the order number and email."}{" "}
+            ? `Signed in as ${customer.email}. Checkout is closed, so nothing new is saved.`
+            : "Checkout is closed. An order already saved can still be tracked with the order number and email."}{" "}
         </p>
         <p className="mt-2 text-xs leading-5 text-muted-foreground">
           {quote
             ? `${quote.zone}, ${quote.days}. ${shippingNote}`
             : shippingNote}{" "}
-          No card is charged.
+          This preview does not sell.
         </p>
       </aside>
     </form>
